@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template_string, redirect, url_for
+from flask import Flask, request, render_template_string, redirect, url_for
 
 app = Flask(__name__)
 
@@ -21,6 +21,9 @@ def list_students():
 
     html = """
     <h2>Student List</h2>
+
+    <a href="/add_student">Add New Student</a><br><br>
+
     <ul>
     {% for s in students %}
         <li>
@@ -34,7 +37,46 @@ def list_students():
     return render_template_string(html, students=students)
 
 
-# Edit form
+# ---------------- ADD STUDENT ----------------
+@app.route('/add_student', methods=['GET', 'POST'])
+def add_student():
+
+    if request.method == 'POST':
+
+        name = request.form['name']
+        grade = int(request.form['grade'])
+        section = request.form['section']
+
+        new_id = len(students) + 1
+
+        students.append({
+            "id": new_id,
+            "name": name,
+            "grade": grade,
+            "section": section
+        })
+
+        return redirect(url_for('list_students'))
+
+    html = """
+    <h2>Add Student</h2>
+
+    <form method="POST">
+        Name: <input type="text" name="name"><br><br>
+        Grade: <input type="number" name="grade"><br><br>
+        Section: <input type="text" name="section"><br><br>
+
+        <button type="submit">Add Student</button>
+    </form>
+
+    <br>
+    <a href="/students">Back to List</a>
+    """
+
+    return render_template_string(html)
+
+
+# ---------------- EDIT STUDENT ----------------
 @app.route('/edit_student/<int:id>', methods=['GET', 'POST'])
 def edit_student(id):
 
@@ -44,14 +86,13 @@ def edit_student(id):
         return "Student not found", 404
 
     if request.method == 'POST':
-        # Get form data and update
+
         student["name"] = request.form["name"]
         student["grade"] = int(request.form["grade"])
         student["section"] = request.form["section"]
 
         return redirect(url_for('list_students'))
 
-    # Show edit form
     html = """
     <h2>Edit Student</h2>
 
